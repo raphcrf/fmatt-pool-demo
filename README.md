@@ -28,7 +28,9 @@ Cada pacote traz tres arquivos que dizem tudo:
 - **`README.md`** — o que a aplicacao faz e como ela e construida
 - **`PLAYBOOK.md`** — calibragem por cliente, instalacao e verificacao
 - **`package.yml`** — metadados que o CI e o portal leem: versao, plugins exigidos,
-  slots de configuracao, releases testadas, implantacoes
+  slots de configuracao, releases testadas, implantacoes e, obrigatoriamente, **o que o
+  pacote entrega** (`delivers`), **o que nao viaja junto** (`requires_environment`) e **o
+  que ajustar depois do install** (`post_install`)
 
 ## Regras do pool
 
@@ -61,6 +63,8 @@ com escopo proprio nao alcanca sem cross-scope. O preco e conhecido e esta nas r
 ## Adicionar um pacote
 
 1. `packages/<id>/` com o projeto Fluent, `README.md`, `PLAYBOOK.md` e `package.yml`
+   — o README abre com **"O que voce recebe ao instalar"**, e o mesmo inventario vai
+   estruturado no `package.yml`, que e o que o portal publica
 2. Zerar os valores de instancia e passar no lint (`scripts/lint-package.sh`)
 3. Instalar e calibrar numa PDI limpa, seguindo **so** o playbook. Se nao der, o playbook
    esta incompleto — e esse e o teste

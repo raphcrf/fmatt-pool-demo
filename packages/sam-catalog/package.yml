@@ -20,6 +20,58 @@ requires:
   releases_tested:            # preencher a cada instalacao validada
     - Zurich
 
+# O que a aplicacao entrega depois de instalada. Obrigatorio em todo pacote:
+# e o que o consumidor le antes de decidir se reaproveita.
+delivers:
+  - group: Ofertas de catalogo
+    items:
+      - "Software License Request — pedir licenca de software homologado"
+      - "Software Approval Request — homologar software novo, com parecer de seguranca"
+      - "Software Version or Edition Upgrade — subir versao ou edicao"
+      - "Software License Return — devolver licenca e liberar o seat"
+      - "Software Usage Report Import — subir relatorio de uso (M365, Autodesk, Visio, Project)"
+      - "Software Purchase Request — pedir compra do que nao existe em contrato"
+  - group: Automacao
+    items:
+      - "5 flows, um por oferta com atendimento automatico"
+      - "2 subflows: Fulfillment Backbone e Entra Removal After Allocation Delete"
+      - "3 actions: Provision Entra Group Membership, Release License Allocation, Process Software Usage Report"
+      - "1 business rule: remove do grupo do Entra quando a alocacao e apagada"
+      - "1 notificacao de pedido de aprovacao"
+  - group: Modelo de dados
+    items:
+      - "2 tabelas de de-para: u_software_entra_group, u_software_usage_offering_map"
+      - "4 tabelas de staging de importacao de uso"
+      - "sc_req_item: coluna u_homologation_outcome"
+      - "cmdb_software_product_model: coluna u_ad_group"
+      - "samp_sw_subscription: 5 colunas de uso e atribuicao de seat"
+  - group: Interface do catalogo
+    items:
+      - "4 variable sets compartilhados pelas ofertas"
+      - "7 client scripts e 6 UI policies de catalogo"
+      - "1 user criteria: License Management Team"
+  - group: Codigo de servidor
+    items:
+      - "SoftwareLicenseCatalogUtils, SoftwareLicenseAvailability (AJAX), EntraGroupProvisioner, UniversalUsageImporter"
+  - group: Testes
+    items:
+      - "ATF cobrindo submissao das seis ofertas, caminho de aprovacao e os importadores"
+
+# Pre-requisitos que NAO viajam com o pacote.
+requires_environment:
+  - "Plugin SAM Pro (com.snc.samp)"
+  - "Catalogo, categoria, user criteria e grupos — referenciados por sys_id, nao criados"
+  - "Spoke, connection e credential do Entra, e o registro do lado do IdP"
+  - "Dado: modelos homologados, entitlements, de-para de uso"
+
+# O que um TC precisa ajustar depois do install.
+post_install:
+  - "Preencher as properties de ambiente (grupos e modelos)"
+  - "Vincular as ofertas ao catalogo e a categoria, se veio por update set"
+  - "Rodar o script de reconciliacao de layout (sys_ui_element nao viaja)"
+  - "Limpar o selo generation_source dos flows"
+  - "Conferir na instancia: 7 flows ativos e 6 ofertas com categoria"
+
 # Tabelas globais que a aplicacao le ou estende. Espelha now.config.json.
 touches:
   - alm_entitlement

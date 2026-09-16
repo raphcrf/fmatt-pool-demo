@@ -89,6 +89,10 @@ def index(pkgs):
                 f'<span class="tag n">{e(p.get("status"))}</span>']
         for pl in (p.get("requires") or {}).get("plugins") or []:
             tags.append(f'<span class="tag n">{e(pl)}</span>')
+        d = p.get("delivers") or []
+        if d:
+            total = sum(len(g.get("items") or []) for g in d)
+            tags.append(f'<span class="tag n">{total} entregas</span>')
         n = len(p.get("config") or [])
         tags.append(f'<span class="tag n">{n} slots de calibragem</span>')
         cards.append(
@@ -148,7 +152,20 @@ def detail(p):
         f"<li>Now SDK: <code>{e(req.get('sdk'))}</code> &middot; Node <code>{e(req.get('node'))}</code></li>"
         f"<li>Releases validadas: {rel}</li>"
         f"<li><code>scopeId</code>: <code>{e(p.get('scope_id'))}</code></li></ul>"
-        f"<h2>Calibragem</h2>"
+        f"<h2>O que voce recebe ao instalar</h2>"
+        + "".join(
+            f"<h3>{e(g.get('group'))}</h3><ul>"
+            + "".join(f"<li>{e(it)}</li>" for it in g.get("items") or [])
+            + "</ul>"
+            for g in p.get("delivers") or []
+        )
+        + (f"<h3>O que <strong>nao</strong> vem junto</h3><ul>"
+           + "".join(f"<li>{e(x)}</li>" for x in p.get("requires_environment") or [])
+           + "</ul>" if p.get("requires_environment") else "")
+        + (f"<h3>Ajustes depois de instalar</h3><ol>"
+           + "".join(f"<li>{e(x)}</li>" for x in p.get("post_install") or [])
+           + "</ol>" if p.get("post_install") else "")
+        + f"<h2>Calibragem</h2>"
         f"<p class=lede>{len(p.get('config') or [])} slots. Os de tipo <em>build</em> sao gravados no "
         f"XML do registro e exigem rebuild; os de tipo <em>property</em> mudam em runtime.</p>"
         f"<div class=scroll><table><tr><th>Slot</th><th>O que e</th><th>Tipo</th>"

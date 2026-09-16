@@ -9,6 +9,92 @@ Este pacote e o **produto**, instalavel em qualquer instancia depois da calibrag
 descrita em [PLAYBOOK.md](PLAYBOOK.md). Nasceu como copia de uma implantacao real e
 foi limpo de tudo que era especifico dela — veja [Origem](#origem).
 
+## O que voce recebe ao instalar
+
+### As seis ofertas de catalogo
+
+| Oferta | Para que serve | Atendimento |
+|---|---|---|
+| **Software License Request** | pedir licenca de um software ja homologado | `Software License Request - Fulfillment` |
+| **Software Approval Request** | homologar um software novo, com parecer de seguranca | `Software Approval Request - Review` |
+| **Software Version or Edition Upgrade** | subir versao ou edicao de uma licenca existente | `Software Version Upgrade - Fulfillment` |
+| **Software License Return** | devolver licenca e liberar o seat para o pool | `Software License Return - Fulfillment` |
+| **Software Usage Report Import** | subir relatorio de uso (M365, Autodesk, Visio, Project) | `Software Usage Report Import - Processing` |
+| **Software Purchase Request** | pedir compra do que nao existe em contrato | atendimento manual |
+
+As ofertas usam quatro **variable sets** compartilhados — Software Information, Licensing
+Information, Technical Information e Business Justification — mais **7 client scripts** e
+**6 UI policies** de catalogo (validacao de datas, justificativa, centro de custo, motivo de
+devolucao, alvo de upgrade, origem do relatorio).
+
+Quem enxerga as ofertas: o user criteria **License Management Team**.
+
+### Automacao
+
+- **5 flows**, um por oferta com atendimento automatico
+- **2 subflows**: `Software License Fulfillment Backbone` (o caminho comum de atendimento) e
+  `Entra Removal After Allocation Delete`
+- **3 actions**: `Provision Entra Group Membership`, `Release License Allocation`,
+  `Process Software Usage Report`
+- **1 business rule**: remove do grupo do Entra quando a alocacao e apagada
+- **1 notificacao**: pedido de aprovacao
+
+### Modelo de dados
+
+**Tabelas novas**
+
+| Tabela | Para que |
+|---|---|
+| `u_software_entra_group` | de-para entre modelo de software e grupo do Entra |
+| `u_software_usage_offering_map` | de-para entre linha de relatorio de uso e oferta |
+| `u_software_usage_import` | staging do importador universal |
+| `u_autodesk_usage_import` · `u_visio_usage_import` · `u_project_usage_import` | staging por fornecedor |
+
+**Colunas acrescentadas a tabelas OOB** — acrescentadas, nunca alterando registro existente:
+
+| Tabela | Colunas |
+|---|---|
+| `sc_req_item` | `u_homologation_outcome` |
+| `cmdb_software_product_model` | `u_ad_group` |
+| `samp_sw_subscription` | `u_seat_assignment`, `u_unassigned_date`, `u_access_option`, `u_days_used`, `u_monthly_average` |
+
+### Codigo de servidor
+
+**4 script includes**: `SoftwareLicenseCatalogUtils`, `SoftwareLicenseAvailability` (AJAX de
+disponibilidade no formulario), `EntraGroupProvisioner`, `UniversalUsageImporter`.
+
+### Configuracao
+
+**8 system properties** com o prefixo `software_license_offerings.` — duas apontam grupos, duas
+apontam modelos de software, quatro ajustam comportamento (aprovacao do gestor, dois tempos de
+verificacao do Entra e o qualifier de modelo). A tabela completa esta na
+[secao de calibragem](#antes-de-instalar-em-qualquer-instancia).
+
+### Testes
+
+Testes ATF cobrindo a submissao das seis ofertas, o caminho de aprovacao com gestor e o
+comportamento dos importadores de uso.
+
+## O que **nao** vem junto
+
+Nada disto viaja com a aplicacao, e cada item e pre-requisito de funcionamento:
+
+- **Plugin SAM Pro** (`com.snc.samp`) — dono de `alm_license`, `alm_entitlement` e
+  `samp_sw_subscription`
+- **Catalogo, categoria, user criteria e grupos** — sao referenciados por sys_id, nao criados
+- **Spoke, connection e credential** do Entra, e o registro do lado do IdP
+- **Dado**: modelos homologados, entitlements, de-para de uso, valores das properties
+
+## O que precisa de ajuste depois de instalar
+
+1. Preencher as properties de ambiente (grupos e modelos)
+2. Vincular as ofertas ao catalogo e a categoria, se a instalacao veio por update set
+3. Rodar o script de reconciliacao de layout — `sys_ui_element` **nao** viaja
+4. Limpar o selo `generation_source` dos flows, reposto a cada install do SDK
+5. Conferir lendo a instancia: **7 flows ativos** e **6 ofertas com categoria**
+
+Passo a passo em [PLAYBOOK.md](PLAYBOOK.md); rotas de instalacao em [INSTALL-ZIP.md](INSTALL-ZIP.md).
+
 ## Do zero a um build valido
 
 ```bash
