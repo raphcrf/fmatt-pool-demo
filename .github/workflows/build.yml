@@ -43,12 +43,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: ${{ matrix.package }}/package-lock.json
 
+      # Sem package-lock no pacote: o package.json ja fixa @servicenow/sdk
+      # numa versao exata, e um lock por pacote so atrapalharia a calibragem.
       - name: Instalar dependencias
         working-directory: ${{ matrix.package }}
-        run: npm ci || npm install
+        run: npm install --no-audit --no-fund
 
       # Build sem instancia: valida que o Fluent compila e gera os XMLs.
       - name: now-sdk build
