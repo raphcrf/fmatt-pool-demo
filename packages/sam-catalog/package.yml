@@ -1,0 +1,94 @@
+# Metadata do pacote. O portal e o CI leem este arquivo.
+id: sam-catalog
+name: Software and License Offerings
+version: 1.0.0
+status: active          # active | frozen | deprecated
+owner: raphcrf
+scope: global           # aplicacao custom em escopo global
+scope_id: f54705066303755ab5405eed473962f5
+
+summary: >
+  Seis ofertas de catalogo, cinco flows e dois subflows para o ciclo de licencas de
+  software sobre SAM Pro: requisicao, homologacao, atualizacao de versao, devolucao,
+  importacao de relatorio de uso e requisicao de compra.
+
+requires:
+  plugins:
+    - com.snc.samp            # Software Asset Management Professional
+  sdk: "4.9.2"                # @servicenow/sdk fixado no package.json
+  node: ">=20"
+  releases_tested:            # preencher a cada instalacao validada
+    - Zurich
+
+# Tabelas globais que a aplicacao le ou estende. Espelha now.config.json.
+touches:
+  - alm_entitlement
+  - alm_license
+  - cmdb_model
+  - cmdb_software_product_model
+  - sc_cat_item
+  - sc_req_item
+  - sc_request
+  - sc_task
+  - samp_sw_subscription
+  - sys_user
+  - sys_user_group
+  - sysapproval_approver
+  - user_criteria
+
+# Os nove slots de calibragem. build = gravado no XML, exige rebuild.
+config:
+  - key: SERVICE_CATALOG_SYS_ID
+    file: src/fluent/shared/instance-refs.ts
+    kind: build
+    required: true
+    what: catalogo onde as ofertas aparecem
+  - key: CATEGORY.software
+    file: src/fluent/shared/instance-refs.ts
+    kind: build
+    required: true
+    what: categoria dentro do catalogo
+  - key: GROUP.licenseManagement
+    file: src/fluent/shared/instance-refs.ts
+    kind: build
+    required: true
+    what: grupo de Gestao de Licencas
+  - key: GROUP_LICENSE_MANAGEMENT
+    file: src/fluent/shared/instance-refs.ts
+    kind: build
+    required: true
+    what: o mesmo sys_id acima, como constante plana
+  - key: USER_CRITERIA.allEmployees
+    file: src/fluent/shared/instance-refs.ts
+    kind: build
+    required: true
+    what: quem enxerga as ofertas
+  - key: software_license_offerings.group_license_management
+    file: src/fluent/properties/instance-bindings.now.ts
+    kind: property
+    required: true
+    what: o mesmo sys_id do grupo, em runtime
+  - key: software_license_offerings.group_information_security
+    file: src/fluent/properties/instance-bindings.now.ts
+    kind: property
+    required: false
+    what: grupo do parecer de seguranca na homologacao
+  - key: visio_software_model
+    file: src/fluent/import-sets/visio-usage-import.now.ts
+    kind: build
+    required: false
+    what: modelo do Visio; sem ele o transform rejeita toda linha
+  - key: project_software_model
+    file: src/fluent/import-sets/project-usage-import.now.ts
+    kind: build
+    required: false
+    what: modelo do Project; sem ele o transform rejeita toda linha
+
+# Properties de comportamento, ajustaveis sem rebuild.
+tunables:
+  - software_license_offerings.manager_approval_enabled
+  - software_license_offerings.entra_add_verify_wait_minutes
+  - software_license_offerings.entra_remove_verify_wait_minutes
+  - software_license_offerings.software_model_qualifier
+
+deployments: []   # preencher: {cliente, instancia, versao, data} - sem sys_ids

@@ -1,0 +1,31 @@
+{
+    "scope": "global",
+    "scopeId": "f54705066303755ab5405eed473962f5",
+    "name": "Software and License Offerings",
+    "description": "Service catalog offerings and fulfillment flows for software license request, software approval, version upgrade, license return and Microsoft 365 usage report import, built on ServiceNow SAM Pro.",
+    "packageResolverVersion": "2.0.0",
+    "jsLevel": "es_latest",
+    "fluentDir": "src/fluent",
+    "serverModulesDir": "src/server",
+    "clientDir": "",
+    "tsconfigPath": "./src/server/tsconfig.json",
+    "dependencies": {
+        "global": {
+            "tables": [
+                "alm_entitlement",
+                "alm_license",
+                "cmdb_model",
+                "cmdb_software_product_model",
+                "sc_cat_item",
+                "sc_req_item",
+                "sc_request",
+                "sc_task",
+                "samp_sw_subscription",
+                "sys_user",
+                "sys_user_group",
+                "sysapproval_approver",
+                "user_criteria"
+            ]
+        }
+    }
+}

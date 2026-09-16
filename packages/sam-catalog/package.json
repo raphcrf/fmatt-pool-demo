@@ -1,0 +1,22 @@
+{
+    "name": "sam-catalog",
+    "version": "1.0.0",
+    "description": "Software and License Offerings - pacote agnostico de cliente. Calibrar os nove slots antes de instalar (ver PLAYBOOK.md).",
+    "license": "UNLICENSED",
+    "imports": {
+        "#now:*": "./@types/servicenow/fluent/*/index.js"
+    },
+    "scripts": {
+        "build": "npx --no-install now-sdk build",
+        "deploy": "npx --no-install now-sdk install",
+        "transform": "npx --no-install now-sdk transform",
+        "types": "npx --no-install now-sdk dependencies"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "devDependencies": {
+        "@servicenow/sdk": "4.9.2",
+        "@servicenow/glide": "27.0.5"
+    }
+}

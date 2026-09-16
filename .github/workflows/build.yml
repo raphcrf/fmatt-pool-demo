@@ -1,0 +1,62 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  changed:
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.list.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: list
+        name: Pacotes tocados por este push
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            DIRS=$(ls -d packages/*/ 2>/dev/null)
+          else
+            DIRS=$(git diff --name-only "$BASE" ${{ github.sha }} \
+                   | grep '^packages/' | cut -d/ -f1,2 | sort -u | sed 's|$|/|')
+          fi
+          echo "packages=$(echo $DIRS | tr ' ' '\n' | sed 's|/$||' \
+            | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  package:
+    needs: changed
+    if: needs.changed.outputs.packages != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changed.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint — nada de cliente no pacote
+        run: ./scripts/lint-package.sh "${{ matrix.package }}"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.package }}/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: ${{ matrix.package }}
+        run: npm ci || npm install
+
+      # Build sem instancia: valida que o Fluent compila e gera os XMLs.
+      - name: now-sdk build
+        working-directory: ${{ matrix.package }}
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.package }}-dist
+          path: ${{ matrix.package }}/dist
+          if-no-files-found: warn

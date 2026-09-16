@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+dist/
+target/
+.now/
+*.tsbuildinfo
+.jest_cache
+
+# Gerado contra uma instancia (npm run types): e o inventario de tabelas dela.
+# Nunca entra no repositorio e nunca vai para um cliente.
+@types/
