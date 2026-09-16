@@ -31,7 +31,7 @@ jobs:
             fi
           fi
 
-          JSON=$(printf '%s\n' "$DIRS" | grep -v '^$' | jq -R . | jq -sc .)
+          JSON=$(printf '%s\n' "$DIRS" | grep -v '^$' | xargs -n1 basename | jq -R . | jq -sc .)
           echo "packages=$JSON" >> "$GITHUB_OUTPUT"
           echo "pacotes: $JSON"
 
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Lint — nada de cliente no pacote
-        run: ./scripts/lint-package.sh "${{ matrix.package }}"
+        run: ./scripts/lint-package.sh "packages/${{ matrix.package }}"
 
       - uses: actions/setup-node@v4
         with:
@@ -56,16 +56,16 @@ jobs:
       # Sem package-lock no pacote: o package.json ja fixa @servicenow/sdk
       # numa versao exata, e um lock por pacote so atrapalharia a calibragem.
       - name: Instalar dependencias
-        working-directory: ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
         run: npm install --no-audit --no-fund
 
       # Build sem instancia: valida que o Fluent compila e gera os XMLs.
       - name: now-sdk build
-        working-directory: ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
         run: npm run build
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package }}-dist
-          path: ${{ matrix.package }}/dist
+          path: packages/${{ matrix.package }}/dist
           if-no-files-found: warn
