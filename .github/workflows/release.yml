@@ -42,16 +42,19 @@ jobs:
       - name: Publicar a release com o ZIP
         env:
           GH_TOKEN: ${{ github.token }}
+          PKG: ${{ steps.t.outputs.pkg }}
+          VER: ${{ steps.t.outputs.version }}
+          REPO: ${{ github.repository }}
         run: |
-          PKG="${{ steps.t.outputs.pkg }}"
-          VER="${{ steps.t.outputs.version }}"
-          ZIP=$(ls packages/$PKG/target/*.zip | head -1)
-          gh release create "${GITHUB_REF#refs/tags/}" "$ZIP" \
-            --title "$PKG v$VER" \
-            --notes "Pacote instalavel de \`$PKG\` v$VER.
-
-**O ZIP carrega a calibragem do build.** Este artefato foi construido com os slots de instancia vazios: serve para testar o mecanismo de instalacao, nao para entregar a cliente. Para um cliente, calibrar conforme o PLAYBOOK e gerar o ZIP daquela instancia.
-
-- [Como instalar pelo ZIP](https://github.com/${{ github.repository }}/blob/main/packages/$PKG/INSTALL-ZIP.md)
-- [Playbook de calibragem](https://github.com/${{ github.repository }}/blob/main/packages/$PKG/PLAYBOOK.md)
-- [Portal](https://raphcrf.github.io/fmatt-pool-demo/$PKG.html)"
+          TAG="${GITHUB_REF#refs/tags/}"
+          ZIP=$(ls "packages/$PKG/target/"*.zip | head -1)
+          {
+            echo "Pacote instalavel de \`$PKG\` v$VER."
+            echo
+            echo "**O ZIP carrega a calibragem do build.** Este artefato foi construido com os slots de instancia vazios: serve para testar o mecanismo de instalacao, nao para entregar a cliente. Para um cliente, calibrar conforme o PLAYBOOK e gerar o ZIP daquela instancia."
+            echo
+            echo "- [Como instalar pelo ZIP](https://github.com/$REPO/blob/main/packages/$PKG/INSTALL-ZIP.md)"
+            echo "- [Playbook de calibragem](https://github.com/$REPO/blob/main/packages/$PKG/PLAYBOOK.md)"
+            echo "- [Portal](https://raphcrf.github.io/fmatt-pool-demo/$PKG.html)"
+          } > notes.md
+          gh release create "$TAG" "$ZIP" --title "$PKG v$VER" --notes-file notes.md
