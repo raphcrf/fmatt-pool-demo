@@ -69,3 +69,21 @@ jobs:
           name: ${{ matrix.package }}-dist
           path: packages/${{ matrix.package }}/dist
           if-no-files-found: warn
+
+  portal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pyyaml
+      - name: Regerar o portal
+        run: python3 scripts/build-portal.py
+      # docs/ e gerado: se o package.yml mudou e ninguem regerou, o portal mente.
+      - name: docs/ esta em dia?
+        run: |
+          if ! git diff --quiet -- docs; then
+            echo "::error::docs/ desatualizado. Rode: python3 scripts/build-portal.py"
+            git diff --stat -- docs
+            exit 1
+          fi

@@ -9,3 +9,6 @@ target/
 # Gerado contra uma instancia (npm run types): e o inventario de tabelas dela.
 # Nunca entra no repositorio e nunca vai para um cliente.
 @types/
+
+# Saidas do Playwright MCP usadas so em verificacao local
+.playwright-mcp/
