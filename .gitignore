@@ -12,3 +12,4 @@ target/
 
 # Saidas do Playwright MCP usadas so em verificacao local
 .playwright-mcp/
+target/

@@ -159,6 +159,11 @@ def detail(p):
         f"<h2>Ajustaveis sem rebuild</h2><ul>{tun}</ul>"
         f"<h2>Tabelas que a aplicacao toca</h2><ul>{touches}</ul>"
         f"<h2>Implantacoes</h2>{dep_html}"
+        f'<h2>Baixar</h2><p class=lede>O ZIP instalavel de cada versao sai na release. '
+        f'Ele carrega a calibragem do build, entao o anexado aqui serve para testar o '
+        f'mecanismo de instalacao, nao para entregar a cliente.</p><ul>'
+        f'<li><a href="{REPO}/releases">Releases</a> &mdash; pacote <code>.zip</code> por versao</li>'
+        f'<li><a href="{BLOB}/packages/{d}/INSTALL-ZIP.md">INSTALL-ZIP.md</a> &mdash; as tres rotas de instalacao</li></ul>'
         f"<h2>Documentacao</h2><ul>"
         f'<li><a href="{BLOB}/packages/{d}/PLAYBOOK.md">PLAYBOOK.md</a> &mdash; calibragem, instalacao e verificacao</li>'
         f'<li><a href="{BLOB}/packages/{d}/README.md">README.md</a> &mdash; o que a aplicacao faz</li>'
