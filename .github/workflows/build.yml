@@ -17,14 +17,23 @@ jobs:
         name: Pacotes tocados por este push
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
-          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
-            DIRS=$(ls -d packages/*/ 2>/dev/null)
+          ALL=$(ls -d packages/*/ 2>/dev/null | sed 's|/$||')
+
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            DIRS="$ALL"
           else
-            DIRS=$(git diff --name-only "$BASE" ${{ github.sha }} \
-                   | grep '^packages/' | cut -d/ -f1,2 | sort -u | sed 's|$|/|')
+            CHANGED=$(git diff --name-only "$BASE" "${{ github.sha }}")
+            # Mexer no lint ou no workflow revalida todos os pacotes.
+            if echo "$CHANGED" | grep -qE '^(scripts/|\.github/workflows/)'; then
+              DIRS="$ALL"
+            else
+              DIRS=$(echo "$CHANGED" | grep '^packages/' | cut -d/ -f1,2 | sort -u)
+            fi
           fi
-          echo "packages=$(echo $DIRS | tr ' ' '\n' | sed 's|/$||' \
-            | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+          JSON=$(printf '%s\n' "$DIRS" | grep -v '^$' | jq -R . | jq -sc .)
+          echo "packages=$JSON" >> "$GITHUB_OUTPUT"
+          echo "pacotes: $JSON"
 
   package:
     needs: changed
